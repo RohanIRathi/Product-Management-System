@@ -111,7 +111,7 @@ AUTH_USER_MODEL = 'home.User'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 DATETIME_INPUT_FORMATS = ['%d/%m/%Y %I:%M %p', ]
 
