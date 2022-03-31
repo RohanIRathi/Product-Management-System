@@ -10,3 +10,15 @@ class Product(models.Model):
     
     def __str__(self):
         return str(self.Company) + " " + str(self.Series) + " " + str(self.Model)
+
+    def json(self):
+        json_data = {
+            'id': self.id,
+            'db_model': 'Product',
+            'company': self.Company,
+            'series': self.Series,
+            'model': self.Model,
+            'price': self.Price,
+            'quantity': self.Quantity
+        }
+        return json_data

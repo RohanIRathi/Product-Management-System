@@ -17,7 +17,7 @@ class UserAdmin(admin.ModelAdmin):
         }),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
         ('Other Info', {
-			'fields': ('CreditScore', 'CreditLimit', 'Address', 'Contact', 'Distributor')
+			'fields': ('PendingAmount', 'CreditScore', 'CreditLimit', 'Address', 'Contact', 'Distributor')
 		}),
 	)
 	

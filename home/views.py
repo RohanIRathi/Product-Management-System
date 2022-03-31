@@ -76,3 +76,23 @@ def get_distributors_list(request):
 		distributors_list = User.objects.filter(is_superuser=True).filter(is_staff=True)
 		response = [distributor.json() for distributor in distributors_list]
 		return JsonResponse({'success': True, 'dist_list': response}, status=200)
+
+def get_retailers_list(request):
+    if request.method == 'GET':
+        retailers_list = User.objects.filter(is_superuser=False).filter(is_staff=True)
+        response = [retailer.json() for retailer in retailers_list]
+        return JsonResponse({'success': True, 'retailer_list': response}, status=200)
+
+def get_profile_details(request, **kwargs):
+	if request.method == 'GET':
+		user_id = kwargs['user_id']
+		try:
+			user = User.objects.get(pk=user_id)
+			if user.is_active:
+				return JsonResponse({'success': True, 'user': user.json()}, status=200)
+			else:
+				return JsonResponse({'success': False, 'error': 'Account not verified'}, status=403)
+		except User.DoesNotExist:
+			return JsonResponse({'success': False, 'error': 'User Does Not Exist'}, status=400)
+		except:
+			return JsonResponse({'success': False, 'error': 'Something Went Wrong'}, status=500)
