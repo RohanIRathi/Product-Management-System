@@ -1,4 +1,3 @@
-from tabnanny import verbose
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -31,6 +30,7 @@ class User(AbstractUser):
 			'credit_limit': self.CreditLimit,
 			'contact': self.Contact,
 			'address': self.Address,
+			'pendingAmount': float(self.PendingAmount),
 			'distributor': self_distributor
 		}
 		return json_data

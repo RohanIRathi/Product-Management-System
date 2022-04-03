@@ -78,10 +78,14 @@ def get_distributors_list(request):
 		return JsonResponse({'success': True, 'dist_list': response}, status=200)
 
 def get_retailers_list(request):
-    if request.method == 'GET':
-        retailers_list = User.objects.filter(is_superuser=False).filter(is_staff=True)
-        response = [retailer.json() for retailer in retailers_list]
-        return JsonResponse({'success': True, 'retailer_list': response}, status=200)
+	if request.method == 'GET':
+		session_data = request.headers['Session']
+		user_id = request.session.decode(session_data)['id']
+		current_user = User.objects.get(pk=user_id)
+		if current_user.is_superuser and current_user.is_staff:
+			retailers_list = User.objects.filter(Distributor=current_user).filter(is_superuser=False).filter(is_staff=True)
+			response = [retailer.json() for retailer in retailers_list]
+			return JsonResponse({'success': True, 'retailer_list': response}, status=200)
 
 def get_profile_details(request, **kwargs):
 	if request.method == 'GET':
