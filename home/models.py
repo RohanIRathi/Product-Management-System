@@ -23,6 +23,7 @@ class User(AbstractUser):
 			'username': self.username,
 			'first_name': self.first_name,
 			'last_name': self.last_name,
+			'email': self.email,
 			'is_superuser': self.is_superuser,
 			'is_staff': self.is_staff,
 			'is_active': self.is_active,
