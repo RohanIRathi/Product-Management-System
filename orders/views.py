@@ -8,9 +8,23 @@ from .models import Order, OrderProduct
 
 # Create your views here.
 
+def get_distributor_orders(request):
+	if request.method == 'GET':
+		user_id = request.session.decode(request.headers['Session'])['id']
+		try:
+			distributor = User.objects.get(pk=user_id)
+			if distributor.is_superuser and distributor.is_staff:
+				orders = Order.objects.filter(DistributorId=distributor).order_by('-CreationDate')
+				distributor_orders = [order.json() for order in orders]
+				return JsonResponse({'success': True, 'orders': distributor_orders}, status=200)
+			else:
+				return JsonResponse({'success': False, 'error': 'Access Denied'}, status=403)
+		except:
+			return JsonResponse({'success': False, 'error': 'User Does Not Exist'}, status=400)
+
 def get_retailer_orders(request):
 	if request.method == 'GET':
-		retailer_id = request.GET['retailer']
+		retailer_id = request.session.decode(request.headers['Session'])['id']
 		try:
 			distributor_id = request.GET['distributor']
 		except:
@@ -21,7 +35,7 @@ def get_retailer_orders(request):
 		retailer_orders = [order.json() for order in orders]
         # order_products = OrderProduct.objects.filter(Order=orders)
         # print(list(order_products))
-		return JsonResponse({'order': retailer_orders}, status=200)
+		return JsonResponse({'order': retailer_orders, 'success': True}, status=200)
 
 def get_order_details(request, **kwargs):
 	if request.method == 'GET':
