@@ -128,11 +128,11 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'https://yash-enterprises.netlify.app/',
+    'https://yash-enterprises.netlify.app',
 ]
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
-    'https://yash-enterprises.netlify.app/',
+    'https://yash-enterprises.netlify.app',
 ]
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "Session",
