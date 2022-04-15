@@ -1,9 +1,21 @@
+from pickle import FALSE
+from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login as auth_login
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.core import mail
+from django.shortcuts import render
 
 from .models import User
 
+from email.mime.image import MIMEImage
+import os
+from datetime import datetime, timedelta
+import pandas as pd
 import json
 
 # Create your views here.
@@ -67,9 +79,41 @@ def signup(request):
 		user.set_password(password1)
 		user.save()
 
+		try:
+			send_request_email(user)
+		except Exception as e:
+			user.delete()
+			raise e
+
 		return JsonResponse({"success": True, 'message': 'Your account has been created and is pending verification.'}, status=200)
 
 	return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+
+def send_request_email(user):
+	token = urlsafe_base64_encode(force_bytes(str(datetime.now()) + "~" + str(user.id)))
+	mail_details = {
+		'verifyurl': 'localhost:3000/verifyAccount?token=' + str(token),
+		'first_name': user.first_name,
+		'last_name': user.last_name,
+	}
+	to_email = [user.Distributor.email]
+	subject = "Request for Account Creation"
+	html_message = render_to_string("registration/request-email.html", mail_details)
+	message = strip_tags(html_message)
+	from_email = settings.EMAIL_HOST_USER
+
+	images = (("email/YashLogo.png", "logoImage"), ("email/banner2.png", "bannerImage"))
+
+	msg = mail.EmailMultiAlternatives(subject, message, from_email, to_email)
+	msg.attach_alternative(html_message, 'text/html')
+	for image in images:
+		with open(os.path.join(settings.MEDIA_ROOT, image[0]), "rb") as img:
+			msgImage = MIMEImage(img.read())
+			msgImage.add_header('Content-ID', f'<{image[1]}>')
+			msg.attach(msgImage)
+	msg.send()
+    
+    # mail.send_mail(subject, message, from_email, to_email, html_message=html_message, fail_silently=False)
 
 def get_distributors_list(request):
 	if request.method == "GET":
@@ -100,3 +144,45 @@ def get_profile_details(request, **kwargs):
 			return JsonResponse({'success': False, 'error': 'User Does Not Exist'}, status=400)
 		except:
 			return JsonResponse({'success': False, 'error': 'Something Went Wrong'}, status=500)
+
+@csrf_exempt
+def verify_account(request):
+	session_data = request.session.decode(request.headers['Session'])
+	try:
+		distributor = User.objects.get(pk = session_data['id'])
+		if not distributor.is_superuser and not distributor.is_staff:
+			raise User.DoesNotExist()
+	except User.DoesNotExist:
+		return JsonResponse({'success': False, 'error': 'Action Unauthorized'}, status=403)
+	token = request.GET['token']
+	decoded = force_str(urlsafe_base64_decode(token))
+	[token_datetime, id] = decoded.split('~')
+	try:
+		user = User.objects.get(pk=id)
+		if user and datetime.now() < pd.to_datetime(token_datetime) + timedelta(days=7):
+			if not user.is_active:
+				if request.method == 'GET':
+					return JsonResponse({'success': True, 'retailer': user.json()}, status=200)
+				elif request.method == 'POST':
+					body = json.loads(request.body)
+					credit_limit = body['credit_limit']
+					accept = body['accept']
+					if not accept:
+						user.delete()
+						return JsonResponse({'success': True, 'message': 'User has been rejected and the account is deleted'}, status=200)
+					else:
+						user.is_active = True
+						user.CreditLimit = credit_limit
+						user.save()
+						return JsonResponse({'success': True, 'message': 'User has been accepted and the credit limit is set'}, status=200)
+			else:
+				return JsonResponse({'success': False, 'error': 'The Retailer has already been accepted'}, status=400)
+		elif user:
+			user.delete()
+			return JsonResponse({'success': False, 'error': 'Link expired'})
+	except User.DoesNotExist:
+		return JsonResponse({'success': False, 'error': 'No Such User to Validate!'}, status=401)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
+
+def test_email(request):
+    return render(request, 'registration/request-email.html', {'verifyurl': '', 'first_name': 'A', 'last_name': 'B'})

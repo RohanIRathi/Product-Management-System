@@ -51,45 +51,50 @@ def get_order_details(request, **kwargs):
 @csrf_exempt
 def add_order(request):
 	if request.method == 'POST':
+		data = json.loads(request.body)
+		distributor = User.objects.get(pk=data['distributor'])
+		retailer = User.objects.get(pk=data['retailer'])
+		totalQuantity = data['totalQuantity']
+		totalAmount = data['totalAmount']
+		products = data['products']
+		product_list, products_to_update = [], []
+		order = Order(
+			DistributorId=distributor,
+			RetailerId=retailer,
+			TotalQuantity=totalQuantity,
+			TotalAmount=totalAmount
+		)
 		try:
-			data = json.loads(request.body)
-			distributor = User.objects.get(pk=data['distributor'])
-			retailer = User.objects.get(pk=data['retailer'])
-			totalQuantity = data['totalQuantity']
-			totalAmount = data['totalAmount']
-			products = data['products']
-			product_list = []
-			order = Order(
-				DistributorId=distributor,
-				RetailerId=retailer,
-				TotalQuantity=totalQuantity,
-				TotalAmount=totalAmount
-			)
 			order.save()
 			totalAmount, totalQuantity = 0, 0
 			for orderproduct in products:
-					product = Product.objects.get(pk=orderproduct['id'])
-					if product.Quantity < orderproduct['quantity']:
-						raise Exception('Insufficient Quantity')
-					order_product = OrderProduct(
-							Order=order,
-							Product=product,
-							Discount=orderproduct['discount'],
-							Quantity=orderproduct['quantity']
-							)
-					totalAmount += (float(product.Price) - (float(product.Price) * float(order_product.Discount) * 0.01)) * order_product.Quantity
-					totalQuantity += order_product.Quantity
-					product_list.append(order_product)
+				print(orderproduct)
+				product = Product.objects.get(pk=orderproduct['product'])
+				if product.Quantity < orderproduct['quantity']:
+					raise Exception('Insufficient Quantity')
+				order_product = OrderProduct(
+						Order=order,
+						Product=product,
+						Discount=orderproduct['discount'],
+						Quantity=orderproduct['quantity']
+						)
+				totalAmount = float(totalAmount) + float((float(product.Price) - (float(product.Price) * float(order_product.Discount) * 0.01)) * float(order_product.Quantity))
+				totalQuantity = float(totalQuantity) + float(order_product.Quantity)
+				product.Quantity -= order_product.Quantity
+				products_to_update.append(product)
+				product_list.append(order_product)
 			order.TotalAmount = totalAmount
 			order.TotalQuantity = totalQuantity
-			if retailer.PendingAmount + order.TotalAmount > retailer.CreditLimit:
+			if float(retailer.PendingAmount) + float(order.TotalAmount) > float(retailer.CreditLimit):
 				raise Exception('Insufficient Credit Limit')
-			retailer.PendingAmount += order.TotalAmount
+			retailer.PendingAmount = float(retailer.PendingAmount) + float(order.TotalAmount)
 			OrderProduct.objects.bulk_create(product_list)
 			order.save()
 			retailer.save()
-			return JsonResponse({'created order': order.json()}, status=200)
+			for product in products_to_update:
+				product.save()
+			return JsonResponse({'success': True, 'created order': order.json()}, status=200)
 		except Exception as e:
 			print(e)
 			order.delete()
-			return JsonResponse({'success': False, 'error': 'Something Went Wrong'}, status=500)
+			return JsonResponse({'success': False, 'error': str(e) or 'Something Went Wrong'}, status=500)
