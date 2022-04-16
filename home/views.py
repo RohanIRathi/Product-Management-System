@@ -8,7 +8,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.core import mail
-from django.shortcuts import render
+from django.contrib.auth.hashers import check_password
 
 from .models import User
 
@@ -184,5 +184,24 @@ def verify_account(request):
 		return JsonResponse({'success': False, 'error': 'No Such User to Validate!'}, status=401)
 	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
-def test_email(request):
-    return render(request, 'registration/request-email.html', {'verifyurl': '', 'first_name': 'A', 'last_name': 'B'})
+@csrf_exempt
+def change_password(request):
+	if request.method == 'POST':
+		session_data = request.session.decode(request.headers['Session'])
+		try:
+			user = User.objects.get(pk=session_data['id'])
+			data = json.loads(request.body)
+			currentPassword = data['oldPassword']
+			newPassword = data['newPassword']
+			confirmPassword = data['confirmPassword']
+			if not check_password(currentPassword, user.password):
+				return JsonResponse({'success': False, 'error': 'The Current Password entered is incorrect'}, status=401)
+			elif currentPassword == newPassword:
+				return JsonResponse({'success': False, 'error': 'New Password cannot be the same as Current Password'}, status=400)
+			elif newPassword == confirmPassword:
+				user.set_password(newPassword)
+				return JsonResponse({'success': True, 'message': 'Password Changed Successfully'}, status=200)
+			else:
+				return JsonResponse({'success': False, 'error': 'New Passwords Do Not Match'}, status=401)
+		except User.DoesNotExist:
+			return JsonResponse({'success': False, 'error': 'Something Went Wrong. Try logging in again.'}, status=400)

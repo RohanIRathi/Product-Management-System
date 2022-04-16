@@ -8,5 +8,5 @@ urlpatterns = [
 	path("getAllRetailers/", views.get_retailers_list, name="getAllRetailers"),
 	path("getProfileDetails/<int:user_id>/", views.get_profile_details, name="fetchProfileDetails"),
 	path("verifyAccount", views.verify_account, name="verifyAccount"),
-	path("testEmail/", views.test_email)
+	path("changePassword/", views.change_password, name="changePassword"),
 ]
