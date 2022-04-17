@@ -12,9 +12,16 @@ def get_distributor_orders(request):
 	if request.method == 'GET':
 		user_id = request.session.decode(request.headers['Session'])['id']
 		try:
+			retailer_id = int(request.GET['retailer'])
+		except:
+			retailer_id = None
+		try:
 			distributor = User.objects.get(pk=user_id)
 			if distributor.is_superuser and distributor.is_staff:
 				orders = Order.objects.filter(DistributorId=distributor).order_by('-CreationDate')
+				if retailer_id:
+					retailer = User.objects.get(pk=retailer_id)
+					orders = orders.filter(RetailerId=retailer)
 				distributor_orders = [order.json() for order in orders]
 				return JsonResponse({'success': True, 'orders': distributor_orders}, status=200)
 			else:

@@ -115,6 +115,17 @@ def send_request_email(user):
     
     # mail.send_mail(subject, message, from_email, to_email, html_message=html_message, fail_silently=False)
 
+def get_retailer_details(request, user_id=None):
+	session_data = request.session.decode(request.headers['Session'])
+	distributor = User.objects.get(pk=session_data['id'])
+	if not distributor.is_superuser or not distributor.is_staff:
+		return JsonResponse({'success': False, 'error': 'Action Unauthorized'}, status=401)
+	try:
+		retailer = User.objects.get(pk=user_id)
+		return JsonResponse({'success': True, 'retailer': retailer.json()}, status=200)
+	except User.DoesNotExist:
+		return JsonResponse({'success': False, 'error': 'User not found'}, status=404)
+
 def get_distributors_list(request):
 	if request.method == "GET":
 		distributors_list = User.objects.filter(is_superuser=True).filter(is_staff=True)
