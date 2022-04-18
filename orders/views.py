@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -105,3 +106,23 @@ def add_order(request):
 			print(e)
 			order.delete()
 			return JsonResponse({'success': False, 'error': str(e) or 'Something Went Wrong'}, status=500)
+
+def order_paid(request):
+	order_id = int(request.GET['order'])
+	session = request.session.decode(request.headers['Session'])
+	user_id = session['id']
+	try:
+		distributor = User.objects.get(pk=user_id)
+		if not distributor.is_superuser or not distributor.is_staff:
+			raise User.DoesNotExist()
+		order = Order.objects.get(pk=order_id)
+		print(order.DistributorId == distributor)
+		if order.DistributorId != distributor:
+			raise Order.DoesNotExist()
+		order.PaymentDate = datetime.now()
+		order.save()
+		return JsonResponse({'success': True, 'message': 'Order marked as paid'}, status=200)
+	except User.DoesNotExist:
+		return JsonResponse({'success': False, 'error': 'Action Unauthoriezd'}, status=403)
+	except Order.DoesNotExist:
+		return JsonResponse({'success': False, 'error': 'Invalid Order Selected'}, status=404)
