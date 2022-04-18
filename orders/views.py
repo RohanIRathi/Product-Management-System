@@ -41,9 +41,7 @@ def get_retailer_orders(request):
 		if distributor_id:
 			orders = orders.filter(DistributorId=distributor_id)
 		retailer_orders = [order.json() for order in orders]
-        # order_products = OrderProduct.objects.filter(Order=orders)
-        # print(list(order_products))
-		return JsonResponse({'order': retailer_orders, 'success': True}, status=200)
+		return JsonResponse({'orders': retailer_orders, 'success': True}, status=200)
 
 def get_order_details(request, **kwargs):
 	if request.method == 'GET':
