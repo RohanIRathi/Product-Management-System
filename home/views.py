@@ -83,7 +83,7 @@ def signup(request):
 			send_request_email(request, user)
 		except Exception as e:
 			user.delete()
-			raise e
+			return JsonResponse({'success': False, 'error': 'Something Went Wrong'}, status=500)
 
 		return JsonResponse({"success": True, 'message': 'Your account has been created and is pending verification.'}, status=200)
 
@@ -92,8 +92,9 @@ def signup(request):
 def send_request_email(request, user):
 	url = str(request.META['HTTP_REFERER'])
 	token = urlsafe_base64_encode(force_bytes(str(datetime.now()) + "~" + str(user.id)))
+	url = url + 'verifyAccount?token=' + str(token)
 	mail_details = {
-		'verifyurl': url + 'verifyAccount?token=' + str(token),
+		'verifyurl': url,
 		'first_name': user.first_name,
 		'last_name': user.last_name,
 	}
@@ -134,6 +135,7 @@ def get_distributors_list(request):
 		return JsonResponse({'success': True, 'dist_list': response}, status=200)
 
 def get_retailers_list(request):
+	print(str(request.META['HTTP_REFERER'])+'verifyAccount?token=')
 	if request.method == 'GET':
 		session_data = request.headers['Session']
 		user_id = request.session.decode(session_data)['id']

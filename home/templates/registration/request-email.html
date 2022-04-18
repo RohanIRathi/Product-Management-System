@@ -109,11 +109,11 @@
         <h1>Hello!</h1>
         <p>Greetings of the day! You Have Received a registration request from {{ first_name }} {{ last_name }}.</p>
         <p>If you want to start accepting orders from them you must grant them your approval by simply clicking on the button below.</p>
-        <a style="color: #ffffff;" href="http://{{ verifyurl }}" class="btn" target="blank">Verify Account</a>
+        <a style="color: #ffffff;" href="{{ verifyurl }}" class="btn" target="blank">Verify Account</a>
         <br>
         <p>If you are not able to view the button
           <span>
-            <a class="link" href="http://{{ verifyurl }}" target="blank">Click on this link</a><br>
+            <a class="link" href="{{ verifyurl }}" target="blank">Click on this link</a><br>
           </span>
         </p>
         <hr />
