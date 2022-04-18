@@ -9,7 +9,7 @@ class User(AbstractUser):
 	Contact = models.BigIntegerField(verbose_name='Mobile no.', null=False, blank=False)
 	Distributor = models.ForeignKey('self', verbose_name='Distributor', null=True, blank=True, on_delete=models.RESTRICT)
 
-	REQUIRED_FIELDS = ['Contact']
+	REQUIRED_FIELDS = ['email', 'first_name', 'last_name', 'Address', 'Contact']
 
 	def __str__(self):
 		return self.first_name + " " + self.last_name
