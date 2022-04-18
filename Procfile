@@ -1,0 +1,1 @@
+web: gunicorn product_management_system.wsgi
