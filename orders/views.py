@@ -77,7 +77,6 @@ def add_order(request):
 			order.save()
 			totalAmount, totalQuantity = 0, 0
 			for orderproduct in products:
-				print(orderproduct)
 				product = Product.objects.get(pk=orderproduct['product'])
 				if product.Quantity < orderproduct['quantity']:
 					raise Exception('Insufficient Quantity')
@@ -117,7 +116,6 @@ def order_paid(request):
 		if not distributor.is_superuser or not distributor.is_staff:
 			raise User.DoesNotExist()
 		order = Order.objects.get(pk=order_id)
-		print(order.DistributorId == distributor)
 		if order.DistributorId != distributor:
 			raise Order.DoesNotExist()
 		order.PaymentDate = datetime.now()

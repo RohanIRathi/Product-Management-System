@@ -49,7 +49,6 @@ def add_product(request):
 
 			return JsonResponse({'success': True, 'addedProduct': product.json()}, status=200)
 		except Exception as e:
-			print(e)
 			return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
 	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
