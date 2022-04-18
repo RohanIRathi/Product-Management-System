@@ -80,7 +80,7 @@ def signup(request):
 		user.save()
 
 		try:
-			send_request_email(user)
+			send_request_email(request, user)
 		except Exception as e:
 			user.delete()
 			raise e
@@ -89,10 +89,11 @@ def signup(request):
 
 	return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
 
-def send_request_email(user):
+def send_request_email(request, user):
+	url = str(request.META['HTTP_REFERER'])
 	token = urlsafe_base64_encode(force_bytes(str(datetime.now()) + "~" + str(user.id)))
 	mail_details = {
-		'verifyurl': 'localhost:3000/verifyAccount?token=' + str(token),
+		'verifyurl': url + 'verifyAccount?token=' + str(token),
 		'first_name': user.first_name,
 		'last_name': user.last_name,
 	}
