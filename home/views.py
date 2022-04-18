@@ -41,6 +41,7 @@ def login(request):
 				return JsonResponse(response, status=200)
 			return JsonResponse({'error': 'Incorrect Password', 'success': False}, status=401)
 		return JsonResponse({'error': 'User Does not exist', 'success': False}, status=401)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
 @csrf_exempt
 def signup(request):
@@ -133,9 +134,9 @@ def get_distributors_list(request):
 		distributors_list = User.objects.filter(is_superuser=True).filter(is_staff=True)
 		response = [distributor.json() for distributor in distributors_list]
 		return JsonResponse({'success': True, 'dist_list': response}, status=200)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
 def get_retailers_list(request):
-	print(str(request.META['HTTP_REFERER'])+'verifyAccount?token=')
 	if request.method == 'GET':
 		session_data = request.headers['Session']
 		user_id = request.session.decode(session_data)['id']
@@ -144,6 +145,8 @@ def get_retailers_list(request):
 			retailers_list = User.objects.filter(Distributor=current_user).filter(is_superuser=False).filter(is_staff=True)
 			response = [retailer.json() for retailer in retailers_list]
 			return JsonResponse({'success': True, 'retailer_list': response}, status=200)
+		return JsonResponse({'success': False, 'error': 'Action Unauthorized'}, status=403)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
 def get_profile_details(request, **kwargs):
 	if request.method == 'GET':
@@ -158,6 +161,7 @@ def get_profile_details(request, **kwargs):
 			return JsonResponse({'success': False, 'error': 'User Does Not Exist'}, status=400)
 		except:
 			return JsonResponse({'success': False, 'error': 'Something Went Wrong'}, status=500)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
 @csrf_exempt
 def verify_account(request):
@@ -189,6 +193,8 @@ def verify_account(request):
 						user.CreditLimit = credit_limit
 						user.save()
 						return JsonResponse({'success': True, 'message': 'User has been accepted and the credit limit is set'}, status=200)
+				else:
+					return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 			else:
 				return JsonResponse({'success': False, 'error': 'The Retailer has already been accepted'}, status=400)
 		elif user:
@@ -196,7 +202,6 @@ def verify_account(request):
 			return JsonResponse({'success': False, 'error': 'Link expired'})
 	except User.DoesNotExist:
 		return JsonResponse({'success': False, 'error': 'No Such User to Validate!'}, status=401)
-	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
 @csrf_exempt
 def change_password(request):

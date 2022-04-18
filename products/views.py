@@ -13,6 +13,7 @@ def get_products_list(request):
 		all_products = [product.json() for product in products_list]
 
 		return JsonResponse({'products_list': all_products, 'success': True}, status=200)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
 def get_product_details(request, **kwargs):
 	if request.method == 'GET':
@@ -24,6 +25,7 @@ def get_product_details(request, **kwargs):
 			return JsonResponse({'success': False, 'error': 'Product does not exist'}, status=400)
 		except:
 			return JsonResponse({'success': False, 'error': 'Something Went Wrong'}, status=500)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
 @csrf_exempt
 def add_product(request):
@@ -49,11 +51,12 @@ def add_product(request):
 		except Exception as e:
 			print(e)
 			return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
 @csrf_exempt
 def update_product(request, **kwargs):
 	if request.method == 'PUT':
-		product_id = kwargs['product_id']
+		product_id = kwargs['product']
 		try:
 			product = Product.objects.get(pk=product_id)
 			data = json.loads(request.body)
@@ -67,3 +70,4 @@ def update_product(request, **kwargs):
 			return JsonResponse({'success': False, 'error': 'Product Does Not Exist'}, status=400)
 		except:
 			return JsonResponse({'success': False, 'error': 'Something Went Wrong'}, status=500)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)

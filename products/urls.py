@@ -1,10 +1,10 @@
-from django.urls import path
+from django.urls import re_path
 
 from . import views
 
 urlpatterns = [
-	path('getAllProducts/', views.get_products_list, name='getAllProducts'),
-	path('fetchProductDetails/<int:product_id>/', views.get_product_details, name='fetchProductDetails'),
-	path('addProduct/', views.add_product, name='addProduct'),
-	path('updateProduct/<int:product_id>/', views.update_product, name='updateProduct'),
+	re_path(r'getAllProducts\/?$', views.get_products_list, name='getAllProducts'),
+	re_path(r'fetchProductDetails/<int:product_id>\/?$', views.get_product_details, name='fetchProductDetails'),
+	re_path(r'addProduct\/?$', views.add_product, name='addProduct'),
+	re_path(r'updateProduct/<int:product_id>\/?$', views.update_product, name='updateProduct'),
 ]

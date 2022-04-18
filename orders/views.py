@@ -29,6 +29,7 @@ def get_distributor_orders(request):
 				return JsonResponse({'success': False, 'error': 'Access Denied'}, status=403)
 		except:
 			return JsonResponse({'success': False, 'error': 'User Does Not Exist'}, status=400)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
 def get_retailer_orders(request):
 	if request.method == 'GET':
@@ -42,6 +43,7 @@ def get_retailer_orders(request):
 			orders = orders.filter(DistributorId=distributor_id)
 		retailer_orders = [order.json() for order in orders]
 		return JsonResponse({'orders': retailer_orders, 'success': True}, status=200)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
 def get_order_details(request, **kwargs):
 	if request.method == 'GET':
@@ -53,6 +55,7 @@ def get_order_details(request, **kwargs):
 			return JsonResponse({'success': False, 'error': 'Invalid Order Id'}, status=400)
 		except:
 			return JsonResponse({'success': False, 'error': 'Something Went Wrong'}, status=500)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
 @csrf_exempt
 def add_order(request):
@@ -101,9 +104,9 @@ def add_order(request):
 				product.save()
 			return JsonResponse({'success': True, 'created order': order.json()}, status=200)
 		except Exception as e:
-			print(e)
 			order.delete()
 			return JsonResponse({'success': False, 'error': str(e) or 'Something Went Wrong'}, status=500)
+	return JsonResponse({'success': False, 'error': 'Method Not Allowed'}, status=405)
 
 def order_paid(request):
 	order_id = int(request.GET['order'])

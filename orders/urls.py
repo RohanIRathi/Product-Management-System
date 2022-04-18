@@ -1,11 +1,11 @@
-from django.urls import path
+from django.urls import re_path
 
 from . import views
 
 urlpatterns = [
-    path('getDistributorOrders/', views.get_distributor_orders, name='getDistributorOrders'),
-	path('getRetailerOrders/', views.get_retailer_orders, name='getRetailerOrders'),
-	path('fetchOrderDetails/<int:order_id>/', views.get_order_details, name='fetchOrderDetails'),
-	path('addOrder/', views.add_order, name='addOrder'),
-	path('orderPaid', views.order_paid, name="orderPaid"),
+    re_path(r'getDistributorOrders\/?$', views.get_distributor_orders, name='getDistributorOrders'),
+	re_path(r'getRetailerOrders\/?$', views.get_retailer_orders, name='getRetailerOrders'),
+	re_path(r'fetchOrderDetails/<int:order_id>\/?$', views.get_order_details, name='fetchOrderDetails'),
+	re_path(r'addOrder\/?$', views.add_order, name='addOrder'),
+	re_path(r'orderPaid\/?$', views.order_paid, name="orderPaid"),
 ]
