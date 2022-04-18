@@ -7,7 +7,7 @@ class User(AbstractUser):
 	CreditLimit = models.IntegerField(verbose_name='Credit Limit', blank=True, null=True)
 	Address = models.CharField(verbose_name='Address', max_length=255, null=False)
 	Contact = models.BigIntegerField(verbose_name='Mobile no.', null=False, blank=False)
-	Distributor = models.ForeignKey('self', verbose_name='Distributor', null=True, on_delete=models.RESTRICT)
+	Distributor = models.ForeignKey('self', verbose_name='Distributor', null=True, blank=True, on_delete=models.RESTRICT)
 
 	def __str__(self):
 		return self.first_name + " " + self.last_name
